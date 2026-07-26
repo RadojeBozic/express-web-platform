@@ -161,7 +161,7 @@
 </template>
 
 <script>
-import { web, api, getCsrfCookie } from '../api/http'
+import api from '../api/http'
 import { saveLoginPayload } from '../utils/auth'
 
 export default {
@@ -174,49 +174,54 @@ export default {
       loading: false,
     }
   },
+
   methods: {
     async submitForm() {
-      console.log('[submitForm] fired', { email: this.email })
       this.error = ''
       this.success = ''
 
       const email = (this.email || '').trim().toLowerCase()
       const password = this.password || ''
+
       if (!email || !password) {
         this.error = 'Email i lozinka su obavezni.'
         return
       }
 
       this.loading = true
+
       try {
-        console.log('1) calling getCsrfCookie')
-        await getCsrfCookie()
-        console.log('1) OK')
+        const { data } = await api.post('/login', {
+          email,
+          password,
+        })
 
-        console.log('2) POST /login')
-        await web.post('/login', { email, password })
-        console.log('2) OK')
-
-        console.log('3) GET /api/user')
-        const { data: user } = await api.get('/user')
-        console.log('3) OK', user)
-
-        saveLoginPayload({ user }, email)
-
-        // --- DEBUG: pauza da ostanu Network logovi vidljivi ---
-        await new Promise((r) => setTimeout(r, 1200))
-        // debugger
-        // --- /DEBUG ---
+        saveLoginPayload(data, email)
 
         const redirect = this.$route?.query?.redirect
-        const target = typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/dashboard'
-        this.$router.replace(target)
-      } catch (e) {
-        console.error('❌ Auth greška:', e?.response?.status, e?.response?.data || e)
-        const s = e?.response?.status
-        if (s === 419) this.error = 'CSRF greška. Očisti kolačiće i probaj ponovo.'
-        else if (s === 401) this.error = 'Email ili lozinka nisu ispravni.'
-        else this.error = e?.response?.data?.message || 'Greška na serveru.'
+
+        const target =
+          typeof redirect === 'string' && redirect.startsWith('/')
+            ? redirect
+            : '/dashboard'
+
+        await this.$router.replace(target)
+      } catch (error) {
+        console.error(
+          'Auth greška:',
+          error?.response?.status,
+          error?.response?.data || error,
+        )
+
+        const status = error?.response?.status
+
+        if (status === 401 || status === 422) {
+          this.error = 'Email ili lozinka nisu ispravni.'
+        } else {
+          this.error =
+            error?.response?.data?.message ||
+            'Došlo je do greške pri prijavljivanju.'
+        }
       } finally {
         this.loading = false
       }

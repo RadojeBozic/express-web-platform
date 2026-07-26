@@ -37,10 +37,20 @@ export const api = axios.create({
   },
 })
 
-for (const c of [web, api]) {
-  c.defaults.xsrfCookieName = 'XSRF-TOKEN'
-  c.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
-}
+api.interceptors.request.use((config) => {
+  if (isBrowser) {
+    const token = localStorage.getItem('token')
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+
+  return config
+})
+
+web.defaults.xsrfCookieName = 'XSRF-TOKEN'
+web.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
 
 // CSRF COOKIE
 export function getCsrfCookie() {
@@ -58,7 +68,6 @@ function attachXsrf(config) {
   return config
 }
 web.interceptors.request.use(attachXsrf)
-api.interceptors.request.use(attachXsrf)
 
 // DEV logger + 419 retry
 const DEV = import.meta.env?.DEV === true

@@ -73,13 +73,15 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api, { getCsrfCookie } from '@/api/http'
 
 export default {
   name: 'AdminSites',
   data() {
     return {
-      sites: []
+      sites: [],
+      loading: false,
+      error: null,
     }
   },
   mounted() {
@@ -87,59 +89,57 @@ export default {
   },
   methods: {
     async fetchSites() {
+      this.loading = true
+      this.error = null
       try {
-        const token = localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8080/api/free-site-request/all-site-requests', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
-        this.sites = res.data
+        const { data } = await api.get('/free-site-request/all-site-requests')
+        // ako backend vraća {data: []} ili direktno []
+        this.sites = Array.isArray(data) ? data : (data?.data ?? [])
+        // (opciono) sort najnovije prvo
+        this.sites.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       } catch (error) {
-        console.error(`❌ ${this.$t('adminSites.errorLoading')}:`, error.response?.data || error.message)
+        console.error('❌ Greška pri učitavanju sajtova:', error?.response?.data || error)
+        this.error = this.$t?.('adminSites.errorLoading') || 'Greška pri učitavanju sajtova.'
+        if (error?.response?.status === 401) this.$router.push('/login')
+      } finally {
+        this.loading = false
       }
     },
 
     async approveSite(slug) {
       try {
-        const token = localStorage.getItem('token')
-        await axios.patch(
-          `http://localhost:8080/api/free-site-request/${slug}/status`,
-          { status: 'active' },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        )
+        // ✅ Sanctum CSRF pre PATCH
+        await getCsrfCookie().catch(() => {})
+        await api.patch(`/free-site-request/${slug}/status`, { status: 'active' })
+
         const site = this.sites.find(s => s.slug === slug)
         if (site) site.status = 'active'
-        alert(`✅ ${this.$t('adminSites.approved')}`)
+        alert(`✅ ${this.$t?.('adminSites.approved') || 'Odobreno.'}`)
       } catch (err) {
-        console.error(`❌ ${this.$t('adminSites.errorApprove')}:`, err.response?.data || err.message)
+        console.error('❌ Greška pri odobravanju:', err?.response?.data || err)
+        if (err?.response?.status === 401) this.$router.push('/login')
+        else alert(this.$t?.('adminSites.errorApprove') || 'Greška pri odobravanju.')
       }
     },
 
     async deleteSite(slug) {
-      if (!confirm(this.$t('adminSites.confirmDelete'))) return
-
+      if (!confirm(this.$t?.('adminSites.confirmDelete') || 'Obrisati sajt?')) return
       try {
-        const token = localStorage.getItem('token')
-        await axios.delete(`http://localhost:8080/api/free-site-request/${slug}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        // ✅ Sanctum CSRF pre DELETE
+        await getCsrfCookie().catch(() => {})
+        await api.delete(`/free-site-request/${slug}`)
         this.sites = this.sites.filter(s => s.slug !== slug)
-        alert(`🗑 ${this.$t('adminSites.deleted')}`)
+        alert(`🗑 ${this.$t?.('adminSites.deleted') || 'Sajt obrisan.'}`)
       } catch (error) {
-        console.error(`❌ ${this.$t('adminSites.errorDelete')}:`, error.response?.data || error.message)
+        console.error('❌ Greška pri brisanju:', error?.response?.data || error)
+        if (error?.response?.status === 401) this.$router.push('/login')
+        else alert(this.$t?.('adminSites.errorDelete') || 'Greška pri brisanju.')
       }
     },
 
     formatDate(date) {
       return new Date(date).toLocaleString('sr-RS')
-    }
-  }
+    },
+  },
 }
 </script>

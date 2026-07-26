@@ -1,49 +1,159 @@
 <template>
-  <!-- ✨ Pozadinska animacija -->
-  <div class="absolute inset-0 -z-10">
-    <Particles class="absolute inset-0" />
-    <div class="absolute left-1/2 -translate-x-1/2 bottom-0">
-      <img src="../images/glow-top.svg" class="max-w-none" width="2146" height="774" alt="Pozadinska animacija" />
-    </div>
-  </div>
+  <div class="relative flex min-h-screen flex-col overflow-hidden bg-slate-900 text-white">
+    <!-- Background -->
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <Particles class="absolute inset-0" />
 
-  <div class="flex flex-col min-h-screen bg-slate-900 text-white">
+      <div class="absolute bottom-[-180px] left-1/2 -translate-x-1/2 opacity-20">
+        <img
+          src="../images/glow-bottom.svg"
+          class="max-w-none"
+          width="1200"
+          height="430"
+          alt=""
+        />
+      </div>
+    </div>
+
     <Header />
 
-    <main class="grow pt-32 pb-20 px-4 sm:px-6 max-w-6xl mx-auto relative">
-      <div class="text-center mb-12">
-        <h1 class="text-3xl font-bold">📁 {{ $t('projects.title') }}</h1>
-        <p class="text-slate-400 max-w-2xl mx-auto mt-4">
-          {{ $t('projects.intro') }}
-        </p>
-      </div>
+    <main class="grow">
+      <section
+        class="mx-auto max-w-6xl px-4 pb-20 pt-32 sm:px-6 md:pt-40"
+        aria-labelledby="projects-title"
+      >
+        <!-- Hero -->
+        <header class="mx-auto mb-14 max-w-3xl text-center">
+          <div
+            class="mb-4 inline-flex rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm font-medium text-purple-300"
+          >
+            {{ $t('portfolio.label') }}
+          </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="id in 18"
-          :key="id"
-          class="bg-slate-800 border border-slate-700 rounded-lg p-6 shadow-lg hover:shadow-purple-700 transition"
-        >
-          <h2 class="text-xl font-semibold text-purple-400 mb-1">
-            {{ $t(`projects.items.${id}.title`) }}
-          </h2>
-          <p class="text-slate-300 text-sm italic mb-2">
-            {{ $t(`projects.items.${id}.subtitle`) }}
+          <h1
+            id="projects-title"
+            class="h1 bg-linear-to-r from-slate-200/60 via-slate-200 to-slate-200/60 bg-clip-text pb-4 text-transparent"
+          >
+            {{ $t('portfolio.title') }}
+          </h1>
+
+          <p class="text-lg leading-relaxed text-slate-400">
+            {{ $t('portfolio.intro') }}
           </p>
-          <details class="text-slate-400 mt-2 text-sm">
-            <summary class="cursor-pointer hover:underline">📖 {{ $t('projects.more') }}</summary>
-            <div class="mt-3 whitespace-pre-line leading-relaxed">
-              {{ $t(`projects.items.${id}.description`) }}
+        </header>
+
+        <!-- Projects -->
+        <div class="space-y-10">
+          <article
+            v-for="(project, index) in projects"
+            :key="project.id"
+            class="grid items-center gap-8 overflow-hidden rounded-3xl border border-slate-700/80 bg-slate-800/60 p-5 shadow-xl backdrop-blur-sm md:grid-cols-2 md:p-8"
+          >
+            <!-- Visual -->
+            <div
+              class="overflow-hidden rounded-2xl border border-slate-700 bg-slate-950"
+              :class="{ 'md:order-2': index % 2 !== 0 }"
+            >
+              <img
+                v-if="project.image"
+                :src="project.image"
+                :alt="$t(`portfolio.items.${project.id}.image_alt`)"
+                class="aspect-video h-full w-full object-cover transition duration-500 hover:scale-[1.02]"
+                loading="lazy"
+              />
+
+              <div
+                v-else
+                class="flex aspect-video items-center justify-center bg-linear-to-br from-slate-800 to-slate-950"
+              >
+                <span class="text-5xl">{{ project.icon }}</span>
+              </div>
             </div>
-          </details>
+
+            <!-- Content -->
+            <div :class="{ 'md:order-1': index % 2 !== 0 }">
+              <div class="mb-3 text-sm font-medium text-purple-300">
+                {{ $t(`portfolio.items.${project.id}.category`) }}
+              </div>
+
+              <h2 class="mb-4 text-2xl font-bold text-slate-100 md:text-3xl">
+                {{ $t(`portfolio.items.${project.id}.title`) }}
+              </h2>
+
+              <p class="mb-5 leading-relaxed text-slate-400">
+                {{ $t(`portfolio.items.${project.id}.description`) }}
+              </p>
+
+              <ul class="mb-6 space-y-2">
+                <li
+                  v-for="featureIndex in project.featureCount"
+                  :key="featureIndex"
+                  class="flex items-start text-sm text-slate-300"
+                >
+                  <svg
+                    class="mr-3 mt-1 shrink-0 fill-purple-400"
+                    width="12"
+                    height="9"
+                    viewBox="0 0 12 9"
+                    aria-hidden="true"
+                  >
+                    <path d="M10.28.28 3.989 6.575 1.695 4.28A1 1 0 0 0 .28 5.695l3 3a1 1 0 0 0 1.414 0l7-7A1 1 0 0 0 10.28.28Z" />
+                  </svg>
+
+                  {{ $t(`portfolio.items.${project.id}.features.${featureIndex}`) }}
+                </li>
+              </ul>
+
+              <div class="flex flex-wrap gap-3">
+                <a
+                  v-if="project.url"
+                  :href="project.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-sm bg-purple-600 text-white transition hover:bg-purple-500"
+                >
+                  {{ $t('portfolio.visit_project') }}
+                  <span class="ml-1">↗</span>
+                </a>
+
+                <RouterLink
+                  to="/contact"
+                  class="btn-sm border border-slate-600 bg-slate-900/50 text-slate-200 transition hover:border-slate-500 hover:text-white"
+                >
+                  {{ $t('portfolio.similar_project') }}
+                  <span class="ml-1">→</span>
+                </RouterLink>
+              </div>
+            </div>
+          </article>
         </div>
-      </div>
+
+        <!-- CTA -->
+        <section
+          class="mt-16 rounded-3xl border border-purple-500/20 bg-purple-500/10 px-6 py-10 text-center md:px-12"
+        >
+          <h2 class="mb-3 text-2xl font-bold text-slate-100 md:text-3xl">
+            {{ $t('portfolio.cta.title') }}
+          </h2>
+
+          <p class="mx-auto mb-6 max-w-2xl text-slate-400">
+            {{ $t('portfolio.cta.description') }}
+          </p>
+
+          <RouterLink
+            to="/contact"
+            class="btn bg-linear-to-r from-white/80 via-white to-white/80 text-slate-900 transition hover:bg-white"
+          >
+            {{ $t('portfolio.cta.button') }}
+            <span class="ml-1 text-purple-500">→</span>
+          </RouterLink>
+        </section>
+      </section>
     </main>
 
     <Footer />
   </div>
 </template>
-
 
 <script>
 import Header from '../partials/Header.vue'
@@ -52,125 +162,46 @@ import Particles from '../partials/Particles.vue'
 
 export default {
   name: 'Projects',
+
   components: {
     Header,
     Footer,
-    Particles
+    Particles,
   },
+
   data() {
     return {
       projects: [
         {
           id: 1,
-          title: 'Express FREE sajt',
-          subtitle: 'Sajt za 5 minuta – besplatno i bez kodiranja.',
-          description: 'Korisnik popunjava formular, bira šablon, sistem generiše prezentaciju. Namenjeno malim firmama i pojedincima.'
+          icon: '🏢',
+          image: new URL('../images/projects/gvp_src.png', import.meta.url).href,
+          url: 'https://gvpconsult.rs',
+          featureCount: 5,
         },
         {
           id: 2,
-          title: 'Express PRO sajt',
-          subtitle: 'Napredna online prezentacija za ozbiljan nastup.',
-          description: 'Dodaj PDF, video, dodatne sekcije, kontakt i više – uz SEO i podršku.'
+          icon: '🛒',
+          image: new URL('../images/projects/agro_bim_shop_src.png', import.meta.url).href,
+          url: 'https://agro-bim.shop',
+          featureCount: 5,
         },
         {
           id: 3,
-          title: 'Express W3 sajt',
-          subtitle: 'Unikatna poslovna prezentacija za 1 dan.',
-          description: 'Brza izrada preko W3Schools šablona — jednostavno, pregledno, mobilno.'
+          icon: '🌐',
+          image: new URL('../images/projects/agrobim_src.png', import.meta.url).href,
+          url: 'https://agro-bim.com',
+          featureCount: 5,
         },
         {
           id: 4,
-          title: 'Express CRUIP sajt',
-          subtitle: 'Moderne i animirane prezentacije.',
-          description: 'Na bazi Cruip dizajna – za tehnološke, startup i SaaS klijente.'
+          icon: '📰',
+          image: new URL('../images/projects/agro_bim_media_src.png', import.meta.url).href,
+          url: 'https://agro-bim.media',
+          featureCount: 5,
         },
-        {
-          id: 5,
-          title: 'Express Original sajt',
-          subtitle: 'Sajt po meri – dizajn i funkcije od nule.',
-          description: 'Prilagođena rešenja za zahtevne klijente i specifične industrije.'
-        },
-        {
-          id: 6,
-          title: 'Express Basic Shop',
-          subtitle: 'Online prodavnica sa osnovnim funkcijama.',
-          description: 'Korpa, checkout, admin panel, SEO – sve što treba za start.'
-        },
-        {
-          id: 7,
-          title: 'Express UNI Shop',
-          subtitle: 'Napredni multi-vendor ili B2B sistem.',
-          description: 'Marketplace, dashboard za prodavce, filteri, Stripe i više jezika.'
-        },
-        {
-          id: 8,
-          title: 'Domen & hosting usluga',
-          subtitle: 'Pomoć pri kupovini i povezivanju domena.',
-          description: 'Nabavka i povezivanje domena, hostinga, SSL sertifikata i emaila.'
-        },
-        {
-          id: 9,
-          title: 'Održavanje sajta',
-          subtitle: 'Tehnička podrška, SEO, backup i izmene.',
-          description: 'Mesečne ili jednokratne usluge održavanja, sigurnosti i ažuriranja.'
-        },
-        {
-          id: 10,
-          title: 'Express Dizajn',
-          subtitle: 'Logo, baneri, društvene mreže – AI + Canva Pro dizajn.',
-          description: 'Brzo i kreativno rešenje za brendiranje uz podršku veštačke inteligencije.'
-        },
-        {
-          id: 11,
-          title: 'Express SEO',
-          subtitle: 'Optimizacija sajta za bolje rangiranje na Google-u.',
-          description: 'Analiza, ključne reči, sadržaj i tehnička optimizacija za bolju vidljivost.'
-        },
-        {
-          id: 12,
-          title: 'Express AI Chatbot',
-          subtitle: 'Automatizujte korisničku podršku uz AI chatbota.',
-          description: 'Brza integracija chatbota za FAQ, podršku i interakciju sa posetiocima.'
-        },
-        {
-          id: 13,
-          title: 'Express Newsletter',
-          subtitle: 'Email marketing rešenje za vašu publiku.',
-          description: 'Kreirajte i šaljite newslettere, pratite analitiku i angažujte korisnike.'
-        },
-        {
-          id: 14,
-          title: 'Express Analytics',
-          subtitle: 'Praćenje poseta i analitika sajta.',
-          description: 'Integracija sa Google Analytics i izveštavanje o performansama sajta.'
-        },
-        {
-          id: 15,
-          title: 'Express Social Media',
-          subtitle: 'Upravljanje društvenim mrežama i kampanjama.',
-          description: 'Planiranje, kreiranje sadržaja i analitika za društvene mreže.'
-        },
-        {
-          id: 16,
-          title: 'Express Marketing',
-          subtitle: 'Sveobuhvatna marketinška strategija za vaš biznis.',
-          description: 'Kreiranje i implementacija marketinških kampanja, SEO, PPC i društvene mreže.'
-        },
-        {
-          id: 17,
-          title: 'Express Prevodi',
-          subtitle: 'Profesionalni prevodi za vašu publiku.',
-          description: 'Kvalitetni prevodi sadržaja, lokalizacija i prilagođavanje za različite jezike.'
-        },
-        {
-          id: 18,
-          title: 'Express Integracije',
-          subtitle: 'Povezivanje sa Stripe, Mailchimp, Google Maps i drugim servisima.',
-          description: 'Automatizujte procese i poboljšajte funkcionalnost sajta kroz integracije.'
-        }
-
-      ]
+      ],
     }
-  }
+  },
 }
 </script>

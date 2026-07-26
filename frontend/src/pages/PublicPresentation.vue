@@ -2,12 +2,15 @@
   <div v-if="siteData" ref="printOnly">
     <component :is="templateComponent" :data="siteData" />
   </div>
+
   <div v-else class="text-center text-white py-20">
-    ⚠️ Nije moguće prikazati ovu prezentaciju.<br />
-    Molimo kontaktirajte administraciju ako smatrate da je došlo do greške.
+    <div v-if="loading">⏳ {{ $t?.('siteview.loading') || 'Učitavanje...' }}</div>
+    <div v-else>
+      ⚠️ {{ $t?.('siteview.notFound') || 'Nije moguće prikazati ovu prezentaciju.' }}<br />
+      {{ $t?.('siteview.contactAdmin') || 'Molimo kontaktirajte administraciju ako smatrate da je došlo do greške.' }}
+    </div>
   </div>
 </template>
-
 
 <script>
 import api from '../api/http'
@@ -68,7 +71,8 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const { data } = await api.get(`/site-request/${this.slug}`) // → /api/site-request/:slug
+        // ✅ ujednačeno sa PresentationView / ostalim delovima
+        const { data } = await api.get(`/free-site-request/${this.slug}`)
         this.siteData = data
       } catch (err) {
         console.error('❌ Greška pri učitavanju sajta:', err)
@@ -86,6 +90,6 @@ export default {
 </script>
 
 <style>
-/* (Opc.) ukloni marginu tela za “čist” print/PDF render */
+/* (Opc.) čist print/PDF render */
 body { margin: 0; }
 </style>

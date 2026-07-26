@@ -1,7 +1,15 @@
 <template>
-  <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-16 mb-16">
     <div class="bg-slate-800 text-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-      <h2 class="text-2xl font-bold mb-4 text-center">{{ $t('invoice.title') }}</h2>
+
+  <!-- X zatvaranje u gornjem desnom uglu -->
+    <button @click="$emit('close')"
+       class="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-red-600/90 hover:bg-red-700 text-white"
+       aria-label="Zatvori"
+       title="Zatvori"
+    >✕</button>
+
+      <h2 class="text-2xl font-bold mb-4 mt-16 text-center">{{ $t('invoice.title') }}</h2>
 
       <!-- Forma -->
       <form @submit.prevent="submitForm" class="space-y-4">
@@ -64,7 +72,7 @@
 
       <div v-if="createdInvoiceId" class="mt-4 text-center">
         <a
-          :href="`http://localhost:8080/api/invoice-request/${createdInvoiceId}/pdf`"
+          :href="pdfHref"
           target="_blank"
           class="text-sm text-purple-400 hover:underline inline-block"
         >
@@ -85,24 +93,25 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import axios from 'axios'
 import { useI18n } from 'vue-i18n'
-import { track } from '@/utils/analytics' // Plausible helper
+import { api } from '@/api/http'            // ⬅ koristi tvoj axios klijent (/api baseURL)
+import { useCart } from '@/utils/CartService'
+import { track } from '@/utils/analytics'   // Plausible helper (safe-guardovan dole)
 
 const { t } = useI18n()
+const cartStore = useCart()
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
-  amount: { type: Number, default: 0 },        // u centima
-  items: { type: Array, default: () => [] },    // [{ id, name, quantity, price(cents) }]
+  amount:  { type: Number,  default: 0 },       // u centima
+  items:   { type: Array,   default: () => [] } // [{ id, name, quantity, price(cents) }]
 })
-
 const emit = defineEmits(['close', 'clear-cart'])
 
 const form = ref({
   name: '',
   email: '',
-  currency: 'rsd',     // 'rsd' | 'eur'
+  currency: 'rsd', // 'rsd' | 'eur'
   description: ''
 })
 
@@ -113,69 +122,76 @@ const currencyForDisplay = computed(() => form.value.currency)
 
 const totalCents = computed(() => {
   return (props.items && props.items.length)
-    ? props.items.reduce((sum, it) => sum + (it.price * it.quantity), 0)
-    : (props.amount || 0)
+    ? props.items.reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.quantity || 0)), 0)
+    : Number(props.amount || 0)
 })
 
 const prettyTotal = computed(() => formatPrice(totalCents.value, currencyForDisplay.value))
 
+// Relativni URL ka pdf-u (isti origin), nema više localhost-a
+const pdfHref = computed(() =>
+  createdInvoiceId.value ? `/api/invoice-request/${createdInvoiceId.value}/pdf` : '#'
+)
+
 function formatPrice(amountCents, currency) {
-  // samo vizuelna konverzija: RSD ≈ EUR * 117.5
-  const rate = 117.5
-  const value = currency === 'rsd' ? amountCents * rate : amountCents
+  // Vizuelna konverzija: RSD ≈ EUR * 117.5 (po potrebi stavi stvarni kurs)
+  const RATE = 117.5
+  const value = currency === 'rsd' ? amountCents * RATE : amountCents
   return new Intl.NumberFormat('sr-RS', {
     style: 'currency',
-    currency: currency === 'rsd' ? 'RSD' : 'EUR'
+    currency: currency === 'rsd' ? 'RSD' : 'EUR',
+    minimumFractionDigits: 2,
   }).format((value || 0) / 100)
+}
+
+function resetForm() {
+  form.value = { name: '', email: '', currency: 'rsd', description: '' }
 }
 
 function close() {
   createdInvoiceId.value = null
+  resetForm()
   emit('close')
 }
 
 async function submitForm() {
   if (loading.value) return
-  try {
-    loading.value = true
-    createdInvoiceId.value = null
+  loading.value = true
+  createdInvoiceId.value = null
 
+  try {
     const hasItems = !!(props.items && props.items.length)
 
     const payload = {
-      name: form.value.name.trim(),
-      email: form.value.email.trim(),
+      name: (form.value.name || '').trim(),
+      email: (form.value.email || '').trim(),
       currency: form.value.currency, // 'rsd' | 'eur'
       description: form.value.description?.trim() || null,
-      ...(hasItems
-        ? {
-            items: props.items.map(i => ({
-              name: i.name,
-              qty: i.quantity,
-              unit_price_cents: i.price
-            }))
-          }
-        : {
-            items: [
-              { name: 'Poručene usluge', qty: 1, unit_price_cents: props.amount || 0 }
-            ]
-          }
-      )
+      items: hasItems
+        ? props.items.map(i => ({
+            name: i.name,
+            qty: Number(i.quantity || 0),
+            unit_price_cents: Number(i.price || 0),
+          }))
+        : [
+            { name: 'Poručene usluge', qty: 1, unit_price_cents: Number(props.amount || 0) }
+          ],
     }
 
-    // koristi axios.defaults.baseURL iz main.js
-    const res = await axios.post('/invoice-request', payload)
-    const id = res?.data?.invoice?.id
+    // /api/invoice-request (public kreiranje po tvojim rutama)
+    const res = await api.post('/invoice-request', payload)
+    const id = res?.data?.invoice?.id || res?.data?.id
     if (id) createdInvoiceId.value = id
 
+    // Event + store clear (oba, zbog kompatibilnosti)
+    try {
+      cartStore?.clearCart?.()
+      window.dispatchEvent(new Event('cart-updated'))
+    } catch {}
+
+    try { track?.('Invoice Requested', { currency: form.value.currency }) } catch {}
+
     alert('✅ ' + t('invoice.alert.success'))
-
-    // Plausible event (cookieless)
-    track('Invoice Requested', { currency: form.value.currency })
-
-    // Isprazni korpu u parent-u
-    emit('clear-cart')
-
   } catch (err) {
     console.error('❌ Greška prilikom slanja:', err)
     alert('❌ ' + t('invoice.alert.error'))

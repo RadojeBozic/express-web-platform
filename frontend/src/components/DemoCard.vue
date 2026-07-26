@@ -9,9 +9,11 @@
     <div class="aspect-video bg-black">
       <iframe
         :src="demoUrl"
+        title="Demo prezentacija"
         frameborder="0"
         class="w-full h-full rounded-b-lg"
         allowfullscreen
+        loading="lazy"
       ></iframe>
     </div>
 
@@ -20,33 +22,34 @@
         :to="redirectPath"
         class="inline-block px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm transition"
       >
-        {{ isAuthenticated ? 'Idi na Dashboard' : 'Registruj se besplatno' }}
+        {{ isAuthed ? 'Idi na Dashboard' : 'Registruj se besplatno' }}
       </router-link>
     </div>
   </div>
 </template>
 
 <script>
-import { isAuthenticated } from '../utils/auth'
+import { isLoggedIn } from '../utils/auth'
 
 export default {
   name: 'DemoCard',
   props: {
-    title: String,
-    description: String,
-    template: String, // npr. 'klasicni'
-    type: String      // 'free' | 'pro' | 'active'
+    title: { type: String, required: true },
+    description: { type: String, default: '' },
+    template: { type: String, required: true }, // npr. 'klasicni'
+    type: { type: String, required: true },     // 'free' | 'pro' | 'active'
   },
   computed: {
     demoUrl() {
+      // interna ruta koju iFrame prikazuje
       return `/prezentacije/demo-${this.template}-${this.type}`
     },
     redirectPath() {
-      return isAuthenticated() ? '/dashboard' : '/signup'
+      return this.isAuthed ? '/dashboard' : '/signup'
     },
-    isAuthenticated() {
-      return isAuthenticated()
-    }
-  }
+    isAuthed() {
+      return isLoggedIn()
+    },
+  },
 }
 </script>

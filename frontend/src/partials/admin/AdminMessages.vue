@@ -64,31 +64,33 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 
 export default {
   name: 'AdminMessages',
   data() {
     return {
       messages: [],
-      vulnerabilities: []
+      vulnerabilities: [],
+      loading: false,
+      error: null,
     }
   },
   async mounted() {
-    const token = localStorage.getItem('token')
+    this.loading = true
+    this.error = null
     try {
       const [msgRes, vulnRes] = await Promise.all([
-        axios.get('http://localhost:8080/api/messages', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:8080/api/vulnerabilities', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/messages'),
+        api.get('/vulnerabilities'),
       ])
-      this.messages = msgRes.data
-      this.vulnerabilities = vulnRes.data
+      this.messages = Array.isArray(msgRes.data) ? msgRes.data : (msgRes.data?.data ?? [])
+      this.vulnerabilities = Array.isArray(vulnRes.data) ? vulnRes.data : (vulnRes.data?.data ?? [])
     } catch (error) {
       console.error('❌ Greška pri učitavanju poruka:', error)
+      this.error = 'Greška pri učitavanju poruka.'
+    } finally {
+      this.loading = false
     }
   },
   methods: {
@@ -96,16 +98,11 @@ export default {
       return new Date(dateStr).toLocaleString()
     },
     async deleteMessage(id, type) {
-      const token = localStorage.getItem('token')
-      const endpoint = type === 'messages' ? 'messages' : 'vulnerabilities'
-
+      const endpoint = type === 'messages' ? '/messages' : '/vulnerabilities'
       if (!confirm('Obrisati ovu poruku?')) return
 
       try {
-        await axios.delete(`http://localhost:8080/api/${endpoint}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        await api.delete(`${endpoint}/${id}`)
         if (type === 'messages') {
           this.messages = this.messages.filter(m => m.id !== id)
         } else {
@@ -113,8 +110,9 @@ export default {
         }
       } catch (error) {
         console.error(`❌ Greška pri brisanju (${type}):`, error)
+        alert('Greška pri brisanju poruke.')
       }
-    }
-  }
+    },
+  },
 }
 </script>

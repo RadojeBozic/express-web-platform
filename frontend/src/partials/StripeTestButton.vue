@@ -12,39 +12,45 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 
 export default {
   name: 'StripeTestButton',
   data() {
     return {
       success: false,
-      error: ''
+      error: '',
+      loading: false,
     }
   },
   methods: {
     async payNow() {
+      if (this.loading) return
       this.success = false
       this.error = ''
+      this.loading = true
 
       try {
-        const res = await axios.post('http://localhost:8080/api/stripe/checkout', {
-          amount: 1000, // $10.00
-          currency: 'usd',
-          token: 'tok_visa', // test token od Stripe-a
-          description: 'Test plaćanje preko Stripe-a'
+        const { data } = await api.post('/stripe/checkout', {
+          amount: 1000,              // 10.00 u valuti ispod (centi)
+          currency: 'usd',           // promeni u 'eur' ako backend tako očekuje
+          token: 'tok_visa',         // Stripe test token
+          description: 'Test plaćanje preko Stripe-a',
         })
 
-        if (res.data.success) {
+        if (data?.success) {
           this.success = true
         } else {
-          this.error = 'Plaćanje nije uspelo.'
+          this.error = data?.message || 'Plaćanje nije uspelo.'
         }
       } catch (err) {
         console.error('❌ Stripe greška:', err)
-        this.error = err.response?.data?.message || 'Došlo je do greške.'
+        this.error = err?.response?.data?.message || 'Došlo je do greške.'
+      } finally {
+        this.loading = false
       }
-    }
-  }
+    },
+  },
 }
 </script>
+

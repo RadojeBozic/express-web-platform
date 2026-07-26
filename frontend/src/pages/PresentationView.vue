@@ -4,77 +4,75 @@
 
     <div v-if="siteData">
       <!-- INFO o paketu -->
-<div class="text-center mb-6 mt-36">
-  <h2 class="text-lg text-white font-semibold mb-1 flex items-center justify-center gap-2">
-    📢 {{ $t('siteview.previewOf') }}
-    <span
-      class="text-xs font-bold px-2 py-1 rounded uppercase"
-      :class="siteData.type === 'pro' ? 'bg-yellow-500 text-slate-900' : 'bg-green-500 text-white'"
-    >
-      {{ siteData.type === 'pro' ? 'PRO' : 'FREE' }}
-    </span>
-  </h2>
+      <div class="text-center mb-6 mt-36">
+        <h2 class="text-lg text-white font-semibold mb-1 flex items-center justify-center gap-2">
+          📢 {{ $t('siteview.previewOf') }}
+          <span
+            class="text-xs font-bold px-2 py-1 rounded uppercase"
+            :class="siteData.type === 'pro' ? 'bg-yellow-500 text-slate-900' : 'bg-green-500 text-white'"
+          >
+            {{ siteData.type === 'pro' ? 'PRO' : 'FREE' }}
+          </span>
+        </h2>
 
-  <!-- Obaveštenje o paketu -->
-  <div
-    :class="siteData.type === 'pro'
-      ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-      : 'bg-green-100 text-green-900 border-green-300'"
-    class="text-sm p-4 rounded mb-4 max-w-xl mx-auto border"
-  >
-    <template v-if="siteData.type === 'pro'">
-      <strong>⚠️ {{ $t('siteview.pro.title') }}</strong><br />
-      {{ $t('siteview.pro.editBlocked') }}<br />
-      <router-link to="/contact" class="text-blue-600 underline hover:text-blue-800">
-        {{ $t('siteview.contactSupport') }}
-      </router-link>
-    </template>
-
-    <template v-else>
-      <strong>🎉 {{ $t('siteview.free.title') }}</strong><br />
-      {{ $t('siteview.free.linkMessage') }}
-      <div class="mt-2 flex items-center justify-center gap-2">
-        <input
-          type="text"
-          :value="fullLink"
-          readonly
-          class="w-full max-w-md px-3 py-1 rounded border border-slate-300 bg-white text-black text-sm"
-        />
-        <button
-          @click="copyLink"
-          class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded shadow"
+        <div
+          :class="siteData.type === 'pro'
+            ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+            : 'bg-green-100 text-green-900 border-green-300'"
+          class="text-sm p-4 rounded mb-4 max-w-xl mx-auto border"
         >
-          📋 {{ $t('siteview.copy') }}
-        </button>
+          <template v-if="siteData.type === 'pro'">
+            <strong>⚠️ {{ $t('siteview.pro.title') }}</strong><br />
+            {{ $t('siteview.pro.editBlocked') }}<br />
+            <router-link to="/contact" class="text-blue-600 underline hover:text-blue-800">
+              {{ $t('siteview.contactSupport') }}
+            </router-link>
+          </template>
+
+          <template v-else>
+            <strong>🎉 {{ $t('siteview.free.title') }}</strong><br />
+            {{ $t('siteview.free.linkMessage') }}
+            <div class="mt-2 flex items-center justify-center gap-2">
+              <input
+                type="text"
+                :value="fullLink"
+                readonly
+                class="w-full max-w-md px-3 py-1 rounded border border-slate-300 bg-white text-black text-sm"
+              />
+              <button
+                @click="copyLink"
+                class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1 rounded shadow"
+              >
+                📋 {{ $t('siteview.copy') }}
+              </button>
+            </div>
+            <p v-if="copySuccess" class="text-green-600 text-xs mt-1">
+              {{ $t('siteview.copied') }}
+            </p>
+
+            <div class="mt-3 text-sm">
+              {{ $t('siteview.notSatisfied') }}
+              <router-link to="/free-site-form" class="text-blue-600 underline hover:text-blue-800">
+                {{ $t('siteview.fillAgain') }}
+              </router-link>.
+            </div>
+          </template>
+
+          <!-- Dugme za preview -->
+          <div class="mt-4 text-center">
+            <router-link
+              :to="`/preview/${slug}`"
+              target="_blank"
+              class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-1 rounded text-sm"
+            >
+              🌐 {{ $t('siteview.openPreview') }}
+            </router-link>
+            <p class="text-xs text-slate-400 mt-2">
+              {{ $t('siteview.pdfHint') }}
+            </p>
+          </div>
+        </div>
       </div>
-      <p v-if="copySuccess" class="text-green-600 text-xs mt-1">
-        {{ $t('siteview.copied') }}
-      </p>
-
-      <div class="mt-3 text-sm">
-        {{ $t('siteview.notSatisfied') }}
-        <router-link to="/free-site-form" class="text-blue-600 underline hover:text-blue-800">
-          {{ $t('siteview.fillAgain') }}
-        </router-link>.
-      </div>
-    </template>
-
-    <!-- Dugme za preview -->
-    <div class="mt-4 text-center">
-      <router-link
-        :to="`/preview/${slug}`"
-        target="_blank"
-        class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-1 rounded text-sm"
-      >
-        🌐 {{ $t('siteview.openPreview') }}
-      </router-link>
-      <p class="text-xs text-slate-400 mt-2">
-        {{ $t('siteview.pdfHint') }}
-      </p>
-    </div>
-  </div>
-</div>
-
 
       <!-- 🔧 Akcije -->
       <div v-if="isOwnerOrAdmin" class="flex justify-center gap-4 mb-6">
@@ -98,7 +96,10 @@
       </div>
     </div>
 
-    <div v-else class="text-white text-center py-20">{{ $t('siteview.loading') }}</div>
+    <div v-else class="text-white text-center py-20">
+      <span v-if="loading">{{ $t('siteview.loading') }}</span>
+      <span v-else>{{ $t('siteview.notFound') || 'Prezentacija nije pronađena.' }}</span>
+    </div>
 
     <Footer />
   </div>
@@ -109,7 +110,7 @@ import html2pdf from 'html2pdf.js'
 import { getCurrentUser } from '../utils/auth'
 import Header from '../partials/Header.vue'
 import Footer from '../partials/Footer.vue'
-import api from '../api/http' // ✅ centralna axios instanca
+import api, { getCsrfCookie } from '../api/http' // ✅ centralni axios + CSRF helper
 
 // Šabloni
 import ClassicPreview from '../templates/ClassicPreview.vue'
@@ -157,11 +158,11 @@ export default {
     },
     templateComponent() {
       const map = {
-        'klasicni': 'ClassicPreview',
-        'moderni': 'ModernPreview',
-        'galerija': 'GalleryPreview',
-        'biznis': 'BusinessPreview',
-        'dark': 'DarkPreview',
+        klasicni: 'ClassicPreview',
+        moderni: 'ModernPreview',
+        galerija: 'GalleryPreview',
+        biznis: 'BusinessPreview',
+        dark: 'DarkPreview',
         'klasicni-pro': 'ClassicPreviewPro',
         'moderni-pro': 'ModernPreviewPro',
         'galerija-pro': 'GalleryPreviewPro',
@@ -178,11 +179,12 @@ export default {
     async fetchSite() {
       this.loading = true
       try {
-        const { data } = await api.get(`/site-request/${this.slug}`) // → /api/site-request/:slug
+        // 🔁 koristimo isti “free-site-request” endpoint kao na ostalim mestima (javna GET ruta postoji)
+        const { data } = await api.get(`/free-site-request/${this.slug}`)
         this.siteData = data
       } catch (err) {
         console.error('❌ Fetch error:', err)
-        alert(this.$t?.('siteview.errors.fetch') || 'Greška pri učitavanju prezentacije.')
+        this.siteData = null
       } finally {
         this.loading = false
       }
@@ -192,7 +194,11 @@ export default {
       if (!confirm(confirmMsg)) return
 
       try {
-        await api.delete(`/site-request/${this.slug}`) // → /api/site-request/:slug
+        // ✅ CSRF cookie pre “write” zahteva (Sanctum)
+        await getCsrfCookie().catch(() => {})
+
+        // 🧹 brisanje ide na zaštićeni endpoint iz iste grupe kao update
+        await api.delete(`/free-site-request/${this.slug}`)
         alert(this.$t?.('siteview.deleted') || 'Prezentacija je obrisana.')
 
         const destination =
@@ -203,7 +209,8 @@ export default {
         this.$router.push(destination)
       } catch (err) {
         console.error('❌ Delete error:', err)
-        alert(this.$t?.('siteview.errors.delete') || 'Greška pri brisanju prezentacije.')
+        const msg = err?.response?.data?.message || this.$t?.('siteview.errors.delete') || 'Greška pri brisanju prezentacije.'
+        alert(msg)
       }
     },
     copyLink() {

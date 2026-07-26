@@ -20,8 +20,7 @@
           <td class="px-4 py-2">{{ invoice.name }}</td>
           <td class="px-4 py-2">{{ invoice.email }}</td>
           <td class="px-4 py-2">{{ invoice.currency }}</td>
-          <td class="px-4 py-2">{{ formatPrice(invoice.amount, invoice.currency) }}</td>
-          <td class="px-4 py-2">{{ invoice.status }}</td>
+          <td class="px-4 py-2">{{ formatPrice((invoice.total_cents ?? invoice.amount), invoice.currency) }}</td>
           <td class="px-4 py-2">
             <select v-model="invoice.status" class="bg-slate-700 text-white rounded px-2 py-1 text-sm">
               <option value="pending">⏳ Na čekanju</option>
@@ -38,7 +37,7 @@
           </td>
           <td class="px-4 py-2 space-x-2">
             <a
-              :href="`http://localhost:8080/api/invoice-request/${invoice.id}/pdf`"
+              :href="`/api/invoice-request/${invoice.id}/pdf`"
               class="text-purple-400 hover:underline"
               target="_blank"
             >📄 PDF</a>
@@ -52,32 +51,24 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import api from '@/api/http'
 
 const invoices = ref([])
 
-onMounted(async () => {
+onMounted(loadInvoices)
+
+async function loadInvoices() {
   try {
-    const res = await axios.get('http://localhost:8080/api/admin/invoices', {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    invoices.value = res.data
+    const { data } = await api.get('/admin/invoices')
+    invoices.value = Array.isArray(data) ? data : (data?.data ?? [])
   } catch (err) {
     console.error('❌ Greška pri učitavanju faktura:', err)
   }
-})
+}
 
 async function updateStatus(invoice) {
   try {
-    await axios.put(`http://localhost:8080/api/invoice-request/${invoice.id}/status`, {
-      status: invoice.status
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    await api.put(`/invoice-request/${invoice.id}/status`, { status: invoice.status })
     alert('✅ Status uspešno ažuriran.')
   } catch (err) {
     console.error('❌ Greška pri ažuriranju statusa:', err)
@@ -86,13 +77,8 @@ async function updateStatus(invoice) {
 
 async function deleteInvoice(id) {
   if (!confirm('Obrisati profakturu?')) return
-
   try {
-    await axios.delete(`http://localhost:8080/api/invoice-request/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    await api.delete(`/invoice-request/${id}`)
     invoices.value = invoices.value.filter(i => i.id !== id)
   } catch (err) {
     console.error('❌ Greška pri brisanju profakture:', err)
@@ -100,10 +86,10 @@ async function deleteInvoice(id) {
 }
 
 function formatPrice(value, currency) {
-  const val = currency === 'rsd' ? value * 117.5 : value
+  const val = currency?.toLowerCase() === 'rsd' ? value * 117.5 : value
   return new Intl.NumberFormat('sr-RS', {
     style: 'currency',
-    currency: currency === 'rsd' ? 'RSD' : 'EUR'
-  }).format(val / 100)
+    currency: currency?.toLowerCase() === 'rsd' ? 'RSD' : 'EUR'
+  }).format((val || 0) / 100)
 }
 </script>

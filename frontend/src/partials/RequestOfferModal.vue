@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 
 export default {
   name: 'RequestOfferModal',
@@ -74,7 +74,7 @@ export default {
           message: `[Upit za: ${this.selectedService}] ${this.form.message}`
         }
 
-        await axios.post('http://localhost:8080/api/contact', payload)
+        await api.post('/contact', payload)
 
         this.success = this.$t('requestModal.success')
         this.error = ''

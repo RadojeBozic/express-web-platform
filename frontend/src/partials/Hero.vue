@@ -1,71 +1,105 @@
 <template>
-  <section>
-    <div class="relative max-w-6xl mx-auto px-4 sm:px-6">
+  <section class="relative overflow-hidden" aria-labelledby="home-hero-title">
+    <div class="relative mx-auto max-w-6xl px-4 sm:px-6">
+      <Particles class="absolute inset-0 -z-10" aria-hidden="true" />
 
-      <!-- Particles -->
-      <Particles class="absolute inset-0 -z-10" />
-
-      <!-- Glow background -->
-      <div class="absolute inset-0 -z-10 -mx-28 rounded-b-[3rem] pointer-events-none overflow-hidden" aria-hidden="true">
-        <div class="absolute left-1/2 -translate-x-1/2 bottom-0 -z-10">
-          <img src="../images/glow-bottom.svg" class="max-w-none" width="2146" height="774" alt="Hero Illustration" />
+      <div
+        class="pointer-events-none absolute inset-0 -z-10 -mx-28 overflow-hidden rounded-b-[3rem]"
+        aria-hidden="true"
+      >
+        <div class="absolute bottom-0 left-1/2 -z-10 -translate-x-1/2">
+          <img
+            src="../images/glow-bottom.svg"
+            class="max-w-none"
+             width="600"
+             height="130"
+            alt=""
+          />
         </div>
       </div>
 
-      <!-- Content -->
-      <div class="pt-32 pb-16 md:pt-20 md:pb-32"> <!-- podešavanje margine -->
-        <div class="max-w-3xl mx-auto text-center">
-
-          <!-- Label -->
+      <div class="pb-16 pt-32 md:pb-28 md:pt-48">
+        <div class="mx-auto max-w-4xl text-center">
           <div class="mb-6" data-aos="fade-down">
-            <div class="inline-flex relative before:absolute before:inset-0 before:bg-purple-500 before:blur-md">
-              <a @click.prevent="goToProjects" class="btn-sm py-0.5 text-slate-300 hover:text-white transition duration-150 ease-in-out group relative before:absolute before:inset-0 before:bg-slate-800/50 before:rounded-full before:pointer-events-none shadow-sm cursor-pointer">
-                <span class="relative inline-flex items-center">
-                  {{ t('hero.label') }}
-                  <span class="tracking-normal text-purple-500 group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-1">-&gt;</span>
-                </span>
-              </a>
-            </div>
+            <span
+              class="relative inline-flex rounded-full border border-purple-400/20 bg-slate-900/60 px-4 py-1.5 text-sm font-medium text-slate-200 shadow-sm backdrop-blur-sm before:absolute before:inset-0 before:-z-10 before:rounded-full before:bg-purple-500/20 before:blur-md"
+            >
+              {{ t('hero.label') }}
+            </span>
           </div>
 
-          <!-- Title & Description -->
-            <p class="text-lg text-slate-300 mb-8" data-aos="fade-down" data-aos-delay="200">
-            {{ t('hero.description') }}
-          </p>
-          <h1 class="h1 bg-clip-text text-transparent bg-linear-to-r from-slate-200/60 via-slate-200 to-slate-200/60 pb-4" data-aos="fade-down">
+          <h1
+            id="home-hero-title"
+            class="h1 bg-linear-to-r from-slate-200/60 via-slate-100 to-slate-200/60 bg-clip-text pb-5 text-transparent"
+            data-aos="fade-down"
+            data-aos-delay="100"
+          >
             {{ t('hero.title') }}
           </h1>
-          <p class="text-lg text-slate-300 mb-8" data-aos="fade-down" data-aos-delay="200">
-            {{ t('hero.descriptions') }}
+
+          <p
+            class="mx-auto mb-8 max-w-3xl text-lg leading-relaxed text-slate-300 md:text-xl"
+            data-aos="fade-down"
+            data-aos-delay="200"
+          >
+            {{ t('hero.description') }}
           </p>
 
-          <!-- CTA buttons -->
-          <div class="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4" data-aos="fade-down" data-aos-delay="400">
-            <div>
-              <a @click.prevent="goDemoPreviews" class="btn text-slate-900 bg-linear-to-r from-white/80 via-white to-white/80 hover:bg-white w-full transition duration-150 ease-in-out group cursor-pointer">
-                {{ t('hero.primary_button') }}
-                <span class="tracking-normal text-purple-500 group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-1">-&gt;</span>
-              </a>
-            </div>
-            <div>
-              <a @click.prevent="goToSignUp" class="btn text-slate-200 hover:text-white bg-slate-900/25 hover:bg-slate-900/30 w-full transition duration-150 ease-in-out group cursor-pointer">
-                <svg class="shrink-0 fill-slate-300 mr-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-                  <path d="m1.999 0 1 2-1 2 2-1 2 1-1-2 1-2-2 1zM11.999 0l1 2-1 2 2-1 2 1-1-2 1-2-2 1zM11.999 10l1 2-1 2 2-1 2 1-1-2 1-2-2 1zM6.292 7.586l2.646-2.647L11.06 7.06 8.413 9.707zM0 13.878l5.586-5.586 2.122 2.121L2.12 16z" />
-                </svg>
-                <span>{{ t('hero.secondary_button') }}</span>
-              </a>
-            </div>
-	    <div>
-  <a
-    @click.prevent="goToHosting"
-    class="btn text-white bg-purple-600 hover:bg-purple-700 w-full transition duration-150 ease-in-out group cursor-pointer"
-  >
-    🌐 <span>{{ t('hero.hosting_button') }}</span>
-    <span class="tracking-normal text-white group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-1">-&gt;</span>
-  </a>
-</div>
+          <div
+            class="mx-auto flex max-w-md flex-col justify-center gap-4 sm:max-w-none sm:flex-row"
+            data-aos="fade-down"
+            data-aos-delay="300"
+          >
+            <RouterLink
+              to="/contact"
+              class="btn group w-full bg-linear-to-r from-white/80 via-white to-white/80 text-slate-900 transition duration-150 ease-in-out hover:bg-white sm:w-auto"
+            >
+              {{ t('hero.primary_button') }}
+              <span
+                class="ml-1 text-purple-500 transition-transform duration-150 ease-in-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              >
+                -&gt;
+              </span>
+            </RouterLink>
+
+            <RouterLink
+              to="/projects"
+              class="btn group w-full border border-slate-700/70 bg-slate-900/30 text-slate-200 transition duration-150 ease-in-out hover:border-slate-600 hover:bg-slate-900/50 hover:text-white sm:w-auto"
+            >
+              {{ t('hero.secondary_button') }}
+              <span
+                class="ml-1 text-purple-400 transition-transform duration-150 ease-in-out group-hover:translate-x-0.5"
+                aria-hidden="true"
+              >
+                -&gt;
+              </span>
+            </RouterLink>
           </div>
 
+          <ul
+            class="mx-auto mt-9 flex max-w-3xl flex-wrap justify-center gap-x-6 gap-y-3 text-sm text-slate-400"
+            data-aos="fade-down"
+            data-aos-delay="400"
+          >
+            <li v-for="benefit in benefits" :key="benefit" class="inline-flex items-center gap-2">
+              <svg
+                class="shrink-0 fill-purple-400"
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="9"
+                viewBox="0 0 12 9"
+                aria-hidden="true"
+              >
+                <path d="M10.28.28 3.989 6.575 1.695 4.28A1 1 0 0 0 .28 5.695l3 3a1 1 0 0 0 1.414 0l7-7A1 1 0 0 0 10.28.28Z" />
+              </svg>
+              <span>{{ benefit }}</span>
+            </li>
+          </ul>
+
+          <p class="mt-6 text-sm text-slate-500" data-aos="fade-down" data-aos-delay="500">
+            {{ t('hero.note') }}
+          </p>
         </div>
       </div>
     </div>
@@ -73,31 +107,27 @@
 </template>
 
 <script>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 import Particles from './Particles.vue'
 
 export default {
   name: 'Hero',
   components: {
-    Particles
+    Particles,
   },
   setup() {
-    const { t } = useI18n()
-    const router = useRouter()
+    const { t, tm } = useI18n()
 
-    const goToSignUp = () => router.push('/signup')
-    const goToProjects = () => router.push('/projects')
-    const goDemoPreviews = () => router.push('/demo')
-    const goToHosting = () => router.push('/pricing#hosting')
+    const benefits = computed(() => {
+      const items = tm('hero.benefits')
+      return Array.isArray(items) ? items.map((item) => String(item)) : []
+    })
 
     return {
       t,
-      goToSignUp,
-      goToProjects,
-      goDemoPreviews,
-      goToHosting
+      benefits,
     }
-  }
+  },
 }
 </script>

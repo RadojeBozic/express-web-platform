@@ -21,7 +21,7 @@
             <ul class="flex">
               <!-- Facebook -->
               <li>
-                <a href="https://facebook.com/gbsplatform" target="_blank" aria-label="Facebook"
+                <a href="https://www.facebook.com/profile.php?id=61579459559619" target="_blank" aria-label="Facebook"
                   class="flex justify-center items-center text-purple-500 hover:text-purple-400 transition duration-150 ease-in-out">
                   <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22 12.07C22 6.49 17.52 2 12 2S2 6.49 2 12.07c0 4.88 3.66 8.93 8.44 9.83v-6.96H8.08v-2.87h2.36V9.41c0-2.33 1.38-3.62 3.5-3.62.7 0 1.42.12 1.42.12v2.6h-1.03c-1.01 0-1.32.63-1.32 1.28v1.53h2.25l-.36 2.87h-1.89v6.96C18.34 21 22 16.95 22 12.07z"/>
@@ -31,13 +31,32 @@
 
               <!-- Instagram -->
               <li class="ml-2">
-                <a href="https://instagram.com/gbsplatform" target="_blank" aria-label="Instagram"
+                <a href="https://www.instagram.com/expressweb.2025/" target="_blank" aria-label="Instagram"
                   class="flex justify-center items-center text-purple-500 hover:text-purple-400 transition duration-150 ease-in-out">
                   <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M7.75 2h8.5A5.75 5.75 0 0122 7.75v8.5A5.75 5.75 0 0116.25 22h-8.5A5.75 5.75 0 012 16.25v-8.5A5.75 5.75 0 017.75 2zm0 1.5A4.25 4.25 0 003.5 7.75v8.5A4.25 4.25 0 007.75 20.5h8.5A4.25 4.25 0 0020.5 16.25v-8.5A4.25 4.25 0 0016.25 3.5h-8.5zm8.75 2.25a.75.75 0 11.001 1.501A.75.75 0 0116.5 5.75zM12 7.25a4.75 4.75 0 110 9.5 4.75 4.75 0 010-9.5zm0 1.5a3.25 3.25 0 100 6.5 3.25 3.25 0 000-6.5z"/>
                   </svg>
                 </a>
               </li>
+
+              <!-- LinkedIn -->
+              <li>
+                <a href="https://www.linkedin.com/in/radoje-bo%C5%BEi%C4%87-9b199930b/" target="_blank" aria-label="LinkedIn"
+                  class="flex justify-center items-center text-purple-500 hover:text-purple-400 transition duration-150 ease-in-out">
+                  <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 
+                    2.24 5 5 5h14c2.76 0 5-2.24 
+                    5-5v-14c0-2.76-2.24-5-5-5zm-11 
+                    19h-3v-10h3v10zm-1.5-11.27c-.97 
+                    0-1.75-.79-1.75-1.76s.78-1.75 
+                    1.75-1.75 1.75.78 1.75 1.75-.78 1.76-1.75 
+                    1.76zm13.5 11.27h-3v-5.6c0-1.34-.03-3.07-1.87-3.07-1.87 
+                    0-2.16 1.46-2.16 2.97v5.7h-3v-10h2.88v1.37h.04c.4-.75 
+                    1.37-1.54 2.82-1.54 3.01 
+                    0 3.57 1.98 3.57 4.55v5.62z"/>
+                </svg>
+              </a>
+          </li>
 
               <!-- GitHub -->
               <li class="ml-2">
@@ -214,7 +233,7 @@
               </router-link>
             </li>
             <li>
-              <router-link to="/cookie-policy" class="text-slate-400 hover:text-slate-200">
+              <router-link to="/footer/legals/cookie-policy" class="text-slate-400 hover:text-slate-200">
                 🍪 {{ $t('footer.cookiePolicy') }}
               </router-link>
             </li>
@@ -227,7 +246,7 @@
     <div class="border-t border-slate-700 py-4 text-center text-xs text-slate-500">
     {{ $t('footer.legal.name') }} —
     {{ $t('footer.legal.mb') }} | {{ $t('footer.legal.pib') }} |
-    {{ $t('footer.legal.account') }} <span class="text-slate-400">160-xxx-xxxxx-xx (RSD)</span> |
+    {{ $t('footer.legal.account') }} <span class="text-slate-400">105000000331557669(RSD)</span> |
     <router-link to="/footer/company/financials" class="hover:underline text-purple-400">
       {{ $t('footer.legal.reports') }}
     </router-link>

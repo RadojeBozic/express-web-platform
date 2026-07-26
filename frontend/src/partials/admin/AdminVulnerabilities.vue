@@ -33,24 +33,28 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 
 export default {
   name: 'AdminVulnerabilities',
   data() {
     return {
-      reports: []
+      reports: [],
+      loading: false,
+      error: null,
     }
   },
   async mounted() {
-    const token = localStorage.getItem('token')
+    this.loading = true
+    this.error = null
     try {
-      const res = await axios.get('http://localhost:8080/api/vulnerabilities', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      this.reports = res.data
+      const { data } = await api.get('/vulnerabilities') // → /api/vulnerabilities
+      this.reports = Array.isArray(data) ? data : (data?.data ?? [])
     } catch (err) {
       console.error('❌ Greška pri učitavanju ranjivosti:', err)
+      this.error = 'Greška pri učitavanju ranjivosti.'
+    } finally {
+      this.loading = false
     }
   },
   methods: {
@@ -58,18 +62,15 @@ export default {
       return new Date(dateStr).toLocaleString()
     },
     async deleteReport(id) {
-      const token = localStorage.getItem('token')
       if (!confirm('Obrisati ovu prijavu?')) return
-
       try {
-        await axios.delete(`http://localhost:8080/api/vulnerabilities/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        await api.delete(`/vulnerabilities/${id}`) // → /api/vulnerabilities/:id
         this.reports = this.reports.filter(r => r.id !== id)
       } catch (err) {
         console.error('❌ Greška pri brisanju prijave:', err)
+        alert('Greška pri brisanju prijave.')
       }
-    }
-  }
+    },
+  },
 }
 </script>

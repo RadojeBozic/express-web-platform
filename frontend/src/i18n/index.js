@@ -3,6 +3,7 @@ import { createI18n } from 'vue-i18n'
 
 import sr from './locales/sr.json'
 import en from './locales/en.json'
+import de from './locales/de.json'
 
 const defaultLocale = localStorage.getItem('locale') || 'sr'
 
@@ -13,7 +14,8 @@ const i18n = createI18n({
   globalInjection: true,
   messages: {
     sr,
-    en
+    en,
+    de
   }
 })
 

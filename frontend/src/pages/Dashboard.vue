@@ -24,42 +24,54 @@
     </div>
 
     <!-- Poruke korisnika -->
+  <div class="bg-slate-800 p-6 rounded-lg max-w-5xl w-full mx-auto text-white mb-8 shadow-lg">
+    <h2 class="text-xl font-semibold mb-4">📩 {{ $t('dashboard.messages.title') }}</h2>
+
+    <ul v-if="messages.length">
+      <li
+        v-for="(msg, index) in messages"
+        :key="index"
+        class="border-b border-slate-700 pb-3 mb-3"
+      >
+        <div class="text-sm text-slate-300">
+          <strong>{{ msg.name || user?.name || 'Korisnik' }}</strong>
+          <span v-if="msg.email" class="text-slate-400"> — {{ msg.email }}</span>
+          <span v-if="msg.created_at" class="text-slate-500"> • {{ new Date(msg.created_at).toLocaleString('sr-RS') }}</span>
+        </div>
+        <div class="mt-1 text-slate-100 whitespace-pre-line">{{ msg.message }}</div>
+      </li>
+    </ul>
+
+    <div v-else class="text-slate-400">{{ $t('dashboard.messages.empty') }}</div>
+  </div>
+
+    
+    <!-- Profakture korisnika -->
     <div class="bg-slate-800 p-6 rounded-lg max-w-5xl w-full mx-auto text-white mb-8 shadow-lg">
-      <h2 class="text-xl font-semibold mb-4">📩 {{ $t('dashboard.messages.title') }}</h2>
+      <h2 class="text-xl font-semibold mb-4">🧾 Vaše profakture</h2>
       <ul>
-        <li v-for="(msg, index) in messages" :key="index" class="border-b border-slate-700 pb-2 mb-2">
-          {{ msg.message }}
+        <li v-for="invoice in invoices" :key="invoice.id" class="border-b border-slate-700 pb-2 mb-2">
+          {{ invoice.name }} – {{ invoice.currency.toUpperCase() }} – 
+          {{ formatPrice((invoice.total_cents ?? invoice.amount), invoice.currency) }} – 
+          Status: {{ invoice.status }}
+          <br />
+          <a
+            :href="`/api/invoice-request/${invoice.id}/pdf`"
+            target="_blank"
+            class="text-sm text-purple-400 hover:underline"
+          >
+            📄 Preuzmi PDF
+          </a>
+          <button
+          @click="deleteInvoice(invoice.id)"
+          class="text-xs text-red-400 hover:text-red-200 mt-1"
+        >
+          🗑️ Obriši
+        </button>
         </li>
-        <li v-if="messages.length === 0">{{ $t('dashboard.messages.empty') }}</li>
+        <li v-if="invoices.length === 0">📭 Nemate aktivnih profaktura.</li>
       </ul>
     </div>
-    <!-- Profakture korisnika -->
-<!-- Profakture korisnika -->
-<div class="bg-slate-800 p-6 rounded-lg max-w-5xl w-full mx-auto text-white mb-8 shadow-lg">
-  <h2 class="text-xl font-semibold mb-4">🧾 Vaše profakture</h2>
-  <ul>
-    <li v-for="invoice in invoices" :key="invoice.id" class="border-b border-slate-700 pb-2 mb-2">
-      {{ invoice.name }} – {{ invoice.currency.toUpperCase() }} – 
-      {{ formatPrice(invoice.amount, invoice.currency) }} – 
-      Status: {{ invoice.status }}
-      <br />
-      <a
-        :href="`http://localhost:8080/api/invoice-request/${invoice.id}/pdf`"
-        target="_blank"
-        class="text-sm text-purple-400 hover:underline"
-      >
-        📄 Preuzmi PDF
-      </a>
-      <button
-      @click="deleteInvoice(invoice.id)"
-      class="text-xs text-red-400 hover:text-red-200 mt-1"
-    >
-      🗑️ Obriši
-    </button>
-    </li>
-    <li v-if="invoices.length === 0">📭 Nemate aktivnih profaktura.</li>
-  </ul>
-</div>
 
 
 

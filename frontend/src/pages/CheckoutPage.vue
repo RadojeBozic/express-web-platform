@@ -1,52 +1,78 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-white py-12 px-4">
+  <div class="min-h-dvh bg-slate-900 text-white">
+    <!-- Fiksni header iznad sadržaja -->
     <Header />
 
-    <div class="max-w-3xl mx-auto">
-      <h1 class="text-3xl font-bold mb-6 text-center mt-[6rem]">🛒 {{ $t('checkout.title') }}</h1>
+    <!-- Sadržaj sa bezbednim gornjim/donjim razmakom (ne seče na manjim uređajima) -->
+    <div class="max-w-3xl mx-auto px-4 pt-28 pb-24">
+      <h1 class="text-3xl font-bold mb-8 text-center">🛒 {{ $t('checkout.title') }}</h1>
 
+      <!-- Prazna korpa -->
       <div v-if="cartItems.length === 0" class="text-center text-slate-400">
         {{ $t('checkout.empty') }}
       </div>
 
+      <!-- Stavke -->
       <div v-else class="space-y-4">
         <div
           v-for="(item, index) in cartItems"
-          :key="`${item.id}-${index}`"
-          class="flex justify-between items-center bg-slate-800 p-4 rounded"
+          :key="`${item.id}-${index}-${item.variantKey || ''}`"
+          class="flex justify-between items-start sm:items-center gap-4 bg-slate-800 p-4 rounded"
         >
-          <div>
-            <h3 class="text-lg font-semibold">{{ item.name }}</h3>
-            <p class="text-sm text-slate-400">
+          <div class="grow">
+            <h3 class="text-lg font-semibold leading-tight">
+              {{ item.name }}
+            </h3>
+            <p class="text-sm text-slate-400 mt-0.5">
               {{ item.quantity }} × {{ formatPrice(item.price) }}
             </p>
-            <button
-              @click="removeItem(item.id)"
-              class="text-xs text-red-400 hover:text-red-200 mt-1"
-            >
-              ❌ {{ $t('checkout.remove') }}
-            </button>
+
+            <div class="flex items-center gap-2 mt-3">
+              <button
+                class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                :aria-label="$t('checkout.decrease') || 'Smanji količinu'"
+                @click="changeQty(item, -1)"
+              >−</button>
+
+              <span class="text-sm tabular-nums">{{ item.quantity }}</span>
+
+              <button
+                class="px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded text-xs"
+                :aria-label="$t('checkout.increase') || 'Povećaj količinu'"
+                @click="changeQty(item, +1)"
+              >+</button>
+
+              <button
+                class="text-xs text-red-400 hover:text-red-200 ml-2"
+                @click="removeItem(item.id)"
+              >
+                ❌ {{ $t('checkout.remove') }}
+              </button>
+            </div>
           </div>
-          <p class="text-purple-400 font-bold">
+
+          <p class="text-purple-400 font-bold whitespace-nowrap">
             {{ formatPrice(item.price * item.quantity) }}
           </p>
         </div>
 
+        <!-- Ukupno -->
         <div class="text-right text-lg mt-6 font-semibold text-green-400">
           {{ $t('checkout.total') }}: {{ formatPrice(totalAmount) }}
         </div>
 
-        <!-- Payment Options -->
+        <!-- Plaćanje / Faktura -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
           <button
             @click="handleStripeCheckout"
-            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded"
+            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded disabled:opacity-50"
+            :disabled="processing || totalAmount === 0"
           >
             💳 {{ $t('checkout.payCard') }}
           </button>
 
           <button
-            @click="showInvoiceModal = true"
+            @click="openInvoiceModal"
             class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded"
           >
             🧾 {{ $t('checkout.invoice_request') }}
@@ -59,21 +85,26 @@
       </div>
     </div>
 
-    <!-- Prosledi stavke iz korpe u modal -->
+    <!-- Modal za profakturu -->
     <InvoiceModal
       :visible="showInvoiceModal"
       :items="cartItems"
       :amount="totalAmount"
-      @close="showInvoiceModal = false"
+      @close="closeInvoiceModal"
       @clear-cart="emptyCartAfterInvoice"
+      
+      :show-close="true"
     />
+
+    <!-- Donji razmak da footer ne “preklopi” sadržaj -->
+    <div class="pb-8"></div>
 
     <Footer />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import Header from '@/partials/Header.vue'
@@ -82,35 +113,39 @@ import InvoiceModal from '@/partials/InvoiceModal.vue'
 
 import { useCart } from '@/utils/CartService'
 import { track, trackOnce } from '@/utils/analytics'
-
-// ✅ koristimo centralnu axios instancu
 import api from '@/api/http'
 
 const { t } = useI18n()
 
-const { cart, removeFromCart, clearCart } = useCart()
-const cartItems = ref([])
+const { cart, removeFromCart, clearCart, updateQuantity } = useCart()
+const cartItems = computed(() => cart.value || [])
 const showInvoiceModal = ref(false)
+const processing = ref(false)
 
 onMounted(() => {
-  // sync iz store-a
-  cartItems.value = [...(cart.value || [])]
-
-  // Plausible: zabeleži ulazak u checkout (jednom po sesiji)
+  // analitika + ESC za zatvaranje modala
   trackOnce('checkout_started', () => track('Checkout Started'))
+  window.addEventListener('keydown', onKey)
 })
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKey)
+})
+
+function onKey(e) {
+  if (e.key === 'Escape' && showInvoiceModal.value) {
+    closeInvoiceModal()
+  }
+}
 
 const totalAmount = computed(() =>
   (cartItems.value || []).reduce((sum, item) => sum + (item.price * item.quantity), 0)
 )
 
-/**
- * Prikaz cene; default RSD za UI (po potrebi promeni na 'EUR')
- * amount je u centima (EUR centi), pa za RSD radimo vizuelnu konverziju.
- */
+/** Prikaz cene; default RSD za UI (amount u centima; za RSD vizuelno * 117.5) */
 function formatPrice(valueCents, currency = 'RSD') {
   const rate = 117.5
-  const isRsd = currency.toUpperCase() === 'RSD'
+  const isRsd = (currency || 'RSD').toUpperCase() === 'RSD'
   const value = isRsd ? (valueCents || 0) * rate : (valueCents || 0)
   return new Intl.NumberFormat('sr-RS', {
     style: 'currency',
@@ -118,18 +153,35 @@ function formatPrice(valueCents, currency = 'RSD') {
   }).format(value / 100)
 }
 
+function changeQty(item, diff) {
+  const next = Math.max(0, (item.quantity || 0) + diff)
+  if (next === 0) {
+    removeItem(item.id)
+    return
+  }
+  updateQuantity(item.id, item.variantKey || '', next)
+}
+
 function removeItem(id) {
   try {
     removeFromCart(id)
-    cartItems.value = [...(cart.value || [])]
   } catch (e) {
     console.error('Remove item error:', e)
   }
 }
 
 function emptyCartAfterInvoice() {
+  // dovoljno je samo očistiti store; computed se automatski osvežava
   clearCart()
-  cartItems.value = []
+}
+
+function openInvoiceModal() {
+  if (!cartItems.value.length) return
+  showInvoiceModal.value = true
+}
+
+function closeInvoiceModal() {
+  showInvoiceModal.value = false
 }
 
 async function handleStripeCheckout() {
@@ -137,11 +189,11 @@ async function handleStripeCheckout() {
     alert('❌ ' + (t('checkout.empty') || 'Korpa je prazna.'))
     return
   }
+  if (processing.value) return
 
+  processing.value = true
   try {
     const token = 'tok_visa' // Stripe test token
-
-    // ✅ api.post('/stripe/checkout') -> efektivno pogađa /api/stripe/checkout na serveru
     const res = await api.post('/stripe/checkout', {
       amount: totalAmount.value,   // u centima
       currency: 'eur',
@@ -150,17 +202,13 @@ async function handleStripeCheckout() {
     })
 
     alert('✅ ' + (t('checkout.paymentSuccess') || `Plaćanje uspešno: ${res?.data?.charge?.id || ''}`))
-
-    // Plausible event
     track('Payment Success', { method: 'stripe', amount_cents: totalAmount.value })
-
-    // Prazni korpu
     clearCart()
-    cartItems.value = []
-
   } catch (err) {
     console.error('❌ Stripe greška:', err)
     alert('❌ ' + (t('checkout.paymentFailed') || 'Plaćanje nije uspelo.'))
+  } finally {
+    processing.value = false
   }
 }
 </script>

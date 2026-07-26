@@ -131,15 +131,17 @@
 
 <script>
 import Header from '../partials/Header.vue'
-import api from '../api/http'                 // ✅ centralna axios instanca (baseURL=/api)
-import { saveLoginPayload } from '../utils/auth' // ✅ sigurno čuvanje token/user
+import api, { web, getCsrfCookie } from '../api/http'   // ✅ /api/* i web klijent
+import { saveLoginPayload } from '../utils/auth'
+
+let inflight
 
 export default {
   name: 'SignUp',
   components: { Header },
   data() {
     return {
-      form: { name: '', email: '', password: '', referrer: 'google' },
+      form: { name: '', email: '', password: '', referrer: 'google', /* password_confirmation: '' */ },
       success: '',
       error: '',
       loading: false,
@@ -147,51 +149,80 @@ export default {
   },
   methods: {
     async submitForm() {
-      if (this.loading) return;
-      this.loading = true
+      if (this.loading) return
       this.success = ''
       this.error = ''
 
-      // brza validacija
-      if (!this.form.name?.trim() || !this.form.email?.trim() || !this.form.password) {
-        this.error = this.$t?.('register.validation_error') || 'Sva polja su obavezna.'
-        this.loading = false
+      // Normalizacija + brza validacija
+      const name = (this.form.name || '').trim()
+      const email = (this.form.email || '').trim().toLowerCase()
+      const password = this.form.password || ''
+      const password_confirmation = this.form.password_confirmation ?? password // Fortify traži confirmed
+
+      if (name.length < 2) {
+        this.error = this.$t?.('register.validation_name') || 'Ime mora imati bar 2 znaka.'
+        return
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        this.error = this.$t?.('register.validation_email') || 'Unesi ispravan email.'
+        return
+      }
+      if (password.length < 6) {
+        this.error = this.$t?.('register.validation_password') || 'Lozinka mora imati bar 6 znakova.'
         return
       }
 
+      try { inflight?.abort() } catch {}
+      inflight = new AbortController()
+      this.loading = true
+
       try {
-        // Ako koristiš Sanctum/session, odkomentariši:
-        // await api.get('/sanctum/csrf-cookie')
+        // 1) CSRF cookie (XSRF-TOKEN + session)
+        await getCsrfCookie()
 
-        const payload = {
-          ...this.form,
-          name: this.form.name.trim(),
-          email: this.form.email.trim(),
-        }
+        // 2) Register ide kroz WEB stack (ne /api) → očekuj 204/201 bez tela
+        await web.post('/register', {
+          name,
+          email,
+          password,
+          password_confirmation,
+          referrer: this.form.referrer,
+        }, { signal: inflight.signal })
 
-        const { data } = await api.post('/register', payload)
+        // 3) Pokupi ulogovanog korisnika kroz API (auth:sanctum)
+        const { data: user } = await api.get('/user', { signal: inflight.signal })
 
-        // sigurno upiši token/user (izbegava "undefined" i loš JSON)
-        saveLoginPayload(data, this.form.email)
+        // 4) Sačuvaj u lokalni state/storage (ovde više nema tokena)
+        saveLoginPayload({ user }, email)
 
         this.success = this.$t?.('register.success') || 'Registracija uspešna!'
-
-        // podrži redirect query ako postoji (?redirect=/nesto)
         const redirect = this.$route?.query?.redirect
         this.$router.push(typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/dashboard')
       } catch (err) {
-        const msg = err?.response?.data?.message || err?.response?.data?.error || null
-        if (err.response?.status === 422) {
-          this.error = this.$t?.('register.validation_error') || (msg ?? 'Greška u validaciji.')
-          console.error('Validacija:', err.response.data.errors)
+        const status = err?.response?.status
+        const resp   = err?.response?.data
+        const msg    = resp?.message || resp?.error || null
+        if (status === 422) {
+          // Laravel validation — prikaži prvo polje ako postoji
+          const first = resp?.errors && Object.values(resp.errors)[0]?.[0]
+          this.error = this.$t?.('register.validation_error') || first || msg || 'Greška u validaciji.'
+          console.error('Validacija:', resp?.errors || resp)
+        } else if (status === 409) {
+          this.error = this.$t?.('register.email_taken') || 'Email adresa je već zauzeta.'
+        } else if (status === 419) {
+          this.error = this.$t?.('auth.csrf') || 'CSRF kolačić nedostaje ili je istekao. Osveži stranicu i pokušaj ponovo.'
+        } else if (status === 429) {
+          this.error = this.$t?.('auth.too_many') || 'Previše pokušaja. Pokušaj kasnije.'
+        } else if (status === 401) {
+          this.error = this.$t?.('auth.invalid_credentials') || msg || 'Neuspela autentikacija.'
         } else {
-          this.error = this.$t?.('register.error') || (msg ?? 'Greška prilikom registracije.')
-          console.error('Backend greška:', err)
+          this.error = msg || (this.$t?.('register.error') || 'Greška prilikom registracije.')
         }
+        console.error('❌ Register error:', status, err?.response)
       } finally {
         this.loading = false
       }
-    }
-  }
+    },
+  },
 }
 </script>

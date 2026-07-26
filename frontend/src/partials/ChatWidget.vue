@@ -73,18 +73,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import { useI18n } from 'vue-i18n'
+import api from '@/api/http' // ✅ centralna axios instanca (baseURL=/api + interceptor)
 
 const { t } = useI18n()
 
 // Feature flagovi iz .env.production (opciono)
 const enabled = (import.meta.env.VITE_CHAT_ENABLED ?? 'true') === 'true'
-// po difoltu NE auto-open (možeš VITE_CHAT_AUTO_OPEN=true ako baš želiš)
 const autoOpen = (import.meta.env.VITE_CHAT_AUTO_OPEN ?? 'false') === 'true'
-
-const baseURL = import.meta.env.VITE_API_URL?.replace(/\/+$/, '') || ''
-const api = axios.create({ baseURL })
 
 const visible = ref(false)
 const showTooltip = ref(false)
@@ -123,7 +119,6 @@ async function sendMessage() {
 onMounted(() => {
   if (!enabled) return
 
-  // Bez auto-otvaranja po defaultu (autoOpen false)
   if (autoOpen) visible.value = true
 
   // Prikaži mali tooltip SAMO na desktopu, max 1x / 24h
@@ -140,10 +135,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

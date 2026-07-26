@@ -5,44 +5,66 @@
       <span class="inline-block px-3 py-1 rounded-full bg-purple-700">{{ $t('edit.version') }}</span>
     </div>
 
-    <form @submit.prevent="submitForm" class="max-w-3xl mx-auto space-y-8">
+    <form @submit.prevent="submitForm" class="max-w-3xl mx-auto space-y-8" novalidate>
       <!-- 📇 OPŠTI PODACI -->
       <fieldset class="space-y-4">
         <legend class="text-xl font-semibold text-purple-400 mb-2">📇 {{ $t('edit.sections.general') }}</legend>
-        <input v-model="form.name" :placeholder="$t('edit.fields.name')" required class="input" />
-        <textarea v-model="form.description" rows="3" :placeholder="$t('edit.fields.description')" required class="input" />
-        <input v-model="form.email" type="email" :placeholder="$t('edit.fields.email')" required class="input" />
-        <input v-model="form.phone" :placeholder="$t('edit.fields.phone')" required class="input" />
-        <input v-model="form.facebook" :placeholder="$t('edit.fields.facebook')" class="input" />
-        <input v-model="form.instagram" :placeholder="$t('edit.fields.instagram')" class="input" />
-        <input type="file" @change="e => handleFile(e, 'logo')" class="block mt-2 text-sm" />
+        <input v-model.trim="form.name" :placeholder="$t('edit.fields.name')" required class="input" />
+        <textarea v-model.trim="form.description" rows="3" :placeholder="$t('edit.fields.description')" required class="input" />
+        <input v-model.trim="form.email" type="email" :placeholder="$t('edit.fields.email')" required class="input" />
+        <input v-model.trim="form.phone" :placeholder="$t('edit.fields.phone')" required class="input" />
+
+        <input
+          v-model.trim="form.facebook"
+          :placeholder="$t('edit.fields.facebook')"
+          class="input"
+          @blur="form.facebook = normalizeUrl(form.facebook)"
+        />
+        <input
+          v-model.trim="form.instagram"
+          :placeholder="$t('edit.fields.instagram')"
+          class="input"
+          @blur="form.instagram = normalizeUrl(form.instagram)"
+        />
+
+        <label class="block text-sm mt-2">{{ $t('edit.fields.logo') }}</label>
+        <input type="file" accept="image/*" @change="e => handleImageFile(e, 'logo')" class="block text-sm" />
       </fieldset>
 
       <!-- 🎯 HERO -->
       <fieldset class="space-y-4">
         <legend class="text-xl font-semibold text-purple-400 mb-2">🎯 {{ $t('edit.sections.hero') }}</legend>
-        <input v-model="form.heroTitle" :placeholder="$t('edit.fields.heroTitle')" required class="input" />
-        <textarea v-model="form.heroSubtitle" rows="2" :placeholder="$t('edit.fields.heroSubtitle')" required class="input" />
-        <input type="file" @change="e => handleFile(e, 'heroImage')" class="block mt-2 text-sm" />
+        <input v-model.trim="form.heroTitle" :placeholder="$t('edit.fields.heroTitle')" required class="input" />
+        <textarea v-model.trim="form.heroSubtitle" rows="2" :placeholder="$t('edit.fields.heroSubtitle')" required class="input" />
+        <input type="file" accept="image/*" @change="e => handleImageFile(e, 'heroImage')" class="block mt-2 text-sm" />
       </fieldset>
 
       <!-- 👥 O NAMA -->
       <fieldset class="space-y-4">
         <legend class="text-xl font-semibold text-purple-400 mb-2">👥 {{ $t('edit.sections.about') }}</legend>
-        <input v-model="form.aboutTitle" :placeholder="$t('edit.fields.aboutTitle')" required class="input" />
-        <textarea v-model="form.aboutText" rows="3" :placeholder="$t('edit.fields.aboutText')" required class="input" />
-        <input type="file" @change="e => handleFile(e, 'aboutImage')" class="block mt-2 text-sm" />
+        <input v-model.trim="form.aboutTitle" :placeholder="$t('edit.fields.aboutTitle')" required class="input" />
+        <textarea v-model.trim="form.aboutText" rows="3" :placeholder="$t('edit.fields.aboutText')" required class="input" />
+        <input type="file" accept="image/*" @change="e => handleImageFile(e, 'aboutImage')" class="block mt-2 text-sm" />
       </fieldset>
 
       <!-- 🛍️ PONUDA -->
       <fieldset class="space-y-4">
         <legend class="text-xl font-semibold text-purple-400 mb-2">🛍️ {{ $t('edit.sections.offer') }}</legend>
-        <input v-model="form.offerTitle" :placeholder="$t('edit.fields.offerTitle')" class="input" />
+        <input v-model.trim="form.offerTitle" :placeholder="$t('edit.fields.offerTitle')" class="input" />
         <div class="space-y-4">
-          <div v-for="(item, index) in form.offerItems" :key="index" class="border border-slate-600 p-3 rounded-md space-y-2">
-            <input v-model="item.title" :placeholder="$t('edit.fields.offerItemTitle')" class="input bg-slate-700" />
-            <input type="file" @change="e => handleOfferImageUpload(e, index)" class="block text-sm" />
-            <button type="button" @click="removeItem(index)" v-if="form.offerItems.length > 1" class="text-red-400 hover:text-red-600 text-sm">
+          <div
+            v-for="(item, index) in form.offerItems"
+            :key="index"
+            class="border border-slate-600 p-3 rounded-md space-y-2"
+          >
+            <input v-model.trim="item.title" :placeholder="$t('edit.fields.offerItemTitle')" class="input bg-slate-700" />
+            <input type="file" accept="image/*" @change="e => handleOfferImageUpload(e, index)" class="block text-sm" />
+            <button
+              type="button"
+              @click="removeItem(index)"
+              v-if="form.offerItems.length > 1"
+              class="text-red-400 hover:text-red-600 text-sm"
+            >
               {{ $t('edit.fields.remove') }}
             </button>
           </div>
@@ -66,7 +88,12 @@
       </fieldset>
 
       <!-- CTA -->
-      <button type="submit" :disabled="loading" class="w-full bg-purple-600 hover:bg-purple-700 py-3 px-4 rounded text-white font-semibold">
+      <button
+        type="submit"
+        :disabled="loading"
+        class="w-full bg-purple-600 hover:bg-purple-700 py-3 px-4 rounded text-white font-semibold"
+        :aria-busy="loading ? 'true' : 'false'"
+      >
         {{ loading ? $t('edit.loading') : $t('edit.submit') }}
       </button>
 
@@ -76,9 +103,8 @@
   </div>
 </template>
 
-
 <script>
-import api from '../api/http'
+import api, { getCsrfCookie } from '../api/http'
 import { getCurrentUser } from '../utils/auth'
 
 export default {
@@ -91,7 +117,7 @@ export default {
       success: '',
       error: '',
       form: {
-        siteType: 'free',
+        siteType: 'free', // 'free' | 'pro' (menjaj samo ako backend dozvoljava)
         name: '',
         description: '',
         email: '',
@@ -122,7 +148,7 @@ export default {
 
       this.form = {
         ...this.form,
-        siteType: site.type,
+        siteType: site.type || 'free',
         name: site.name ?? '',
         description: site.description ?? '',
         email: site.email ?? '',
@@ -145,9 +171,20 @@ export default {
     }
   },
   methods: {
-    handleFile(e, field) {
+    normalizeUrl(val) {
+      const v = (val || '').trim()
+      if (!v) return ''
+      if (/^https?:\/\//i.test(v)) return v
+      return `https://${v}`
+    },
+    handleImageFile(e, field) {
       const file = e.target.files?.[0]
-      if (file) this.form[field] = file
+      if (file && (!file.type?.startsWith('image/') || file.size > 4 * 1024 * 1024)) {
+        this.error = this.$t?.('edit.errors.image') || 'Pogrešan format ili prevelika slika.'
+        this.form[field] = null
+        return
+      }
+      this.form[field] = file || null
     },
     handleOfferImageUpload(e, index) {
       const file = e.target.files?.[0]
@@ -156,7 +193,7 @@ export default {
         this.form.offerItems[index].image = null
         return
       }
-      this.form.offerItems[index].image = file
+      this.form.offerItems[index].image = file || null
     },
     addItem() {
       if (this.form.offerItems.length < 10) {
@@ -172,43 +209,65 @@ export default {
       this.loading = true
 
       try {
+        // 1) CSRF cookie (ako koristiš Sanctum)
+        await getCsrfCookie().catch(() => {})
+
+        // 2) FormData — snake_case za backend
         const fd = new FormData()
 
-        // obična polja (osim offerItems)
-        Object.entries(this.form).forEach(([key, value]) => {
-          if (key !== 'offerItems' && value !== null && typeof value !== 'undefined') {
-            fd.append(key, value)
-          }
+        // ako backend dozvoljava izmenu tipa:
+        if (this.form.siteType) fd.append('type', this.form.siteType)
+
+        const textFields = [
+          'name', 'description', 'email', 'phone',
+          'facebook', 'instagram',
+          'heroTitle', 'heroSubtitle',
+          'aboutTitle', 'aboutText',
+          'offerTitle',
+          'template',
+        ]
+        const mapKey = (k) => ({
+          heroTitle: 'hero_title',
+          heroSubtitle: 'hero_subtitle',
+          aboutTitle: 'about_title',
+          aboutText: 'about_text',
+          offerTitle: 'offer_title',
+        }[k] || k)
+
+        textFields.forEach((k) => {
+          const v = (this.form[k] ?? '').toString()
+          fd.append(mapKey(k), v)
         })
 
-        // naslov ponude
-        fd.append('offerTitle', this.form.offerTitle ?? '')
+        // fajlovi (samo ako su promenjeni)
+        if (this.form.logo instanceof File)       fd.append('logo', this.form.logo)
+        if (this.form.heroImage instanceof File)  fd.append('hero_image', this.form.heroImage)
+        if (this.form.aboutImage instanceof File) fd.append('about_image', this.form.aboutImage)
 
-        // items
+        // offer_items[*]
         this.form.offerItems.forEach((item, i) => {
-          fd.append(`offerItems[${i}][title]`, item.title ?? '')
-          if (item.image) {
-            fd.append(`offerItems[${i}][image]`, item.image)
+          fd.append(`offer_items[${i}][title]`, (item?.title ?? '').toString())
+          if (item?.image instanceof File) {
+            fd.append(`offer_items[${i}][image]`, item.image)
           }
         })
 
-        // Laravel: POST + _method=PUT radi pouzdano sa multipart/form-data
-        const { data } = await api.post(
-          `/free-site-request/${this.slug}?_method=PUT`,
-          fd
-        )
+        // 3) Laravel PUT preko multipart-a: _method=PUT
+        const { data } = await api.post(`/free-site-request/${this.slug}?_method=PUT`, fd)
 
         this.success = this.$t?.('edit.success') || 'Uspešno sačuvano.'
+        const targetSlug = data?.slug || this.slug
         setTimeout(() => {
-          this.$router.push(`/prezentacije/${data?.slug || this.slug}`)
-        }, 1200)
+          this.$router.push(`/prezentacije/${targetSlug}`)
+        }, 800)
       } catch (err) {
-        console.error('❌ Save error:', err)
-        if (err.response?.status === 422 && err.response.data?.errors) {
-          const errors = Object.values(err.response.data.errors).flat()
-          this.error = errors.join(', ')
+        console.error('❌ Save error:', err?.response || err)
+        const res = err?.response
+        if (res?.status === 422 && res.data?.errors) {
+          const first = Object.values(res.data.errors).flat()?.[0]
+          this.error = first || (this.$t?.('edit.errors.save') || 'Greška pri čuvanju podataka.')
         } else {
-          this.error = this.$t?.('edit.errors.save') || 'Greška pri čuvanju podataka.'
+          this.error = res?.data?.message || this.$t?.('edit.errors.save') || 'Greška pri čuvanju podataka.'
         }
       } finally {
         this.loading = false

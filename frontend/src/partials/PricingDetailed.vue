@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 import Particles from './Particles.vue'
 import RequestOfferModal from './RequestOfferModal.vue'
 import StripeCheckout from './StripeCheckout.vue'
@@ -115,7 +115,8 @@ export default {
     },
     addProductToCart(item, index) {
       addToCart({
-        id: index + 1, // ili pravi ID ako postoji
+        id: `svc-${index + 1}`,
+        variantKey: this.$i18n?.locale || 'sr',
         name: item.title,
         price: this.getPriceNumber(item.price),
         quantity: 1
@@ -124,14 +125,17 @@ export default {
     },
     getPriceNumber(priceString) {
       // Pretvara "od 20 € godišnje" u broj (npr. 20 * 100 = 2000 centi)
-      const match = priceString.match(/\d+/)
-      return match ? parseInt(match[0], 10) * 100 : 0
+      const raw = (priceString || '').toString().replace(/\s/g, '')
+      const m = raw.match(/(\d+([.,]\d{1,2})?)/)
+      if (!m) return 0
+      const normalized = m[1].replace(',', '.')
+      return Math.round(parseFloat(normalized) * 100) || 0
     },
     async handleStripePayment() {
       try {
         const token = 'tok_visa'
 
-        const res = await axios.post('http://localhost:8080/api/stripe/checkout', {
+        const res = await api.post('/stripe/checkout', {
           amount: 3000,
           currency: 'eur',
           description: 'Premium plan test',

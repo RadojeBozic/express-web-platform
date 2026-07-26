@@ -53,26 +53,28 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/api/http'
 
 export default {
   name: 'AdminUsers',
   data() {
     return {
-      users: []
+      users: [],
+      loading: false,
+      error: null,
     }
   },
   async mounted() {
-    const token = localStorage.getItem('token')
+    this.loading = true
+    this.error = null
     try {
-      const response = await axios.get('http://localhost:8080/api/users', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      this.users = response.data
+      const { data } = await api.get('/users') // → /api/users
+      this.users = Array.isArray(data) ? data : (data?.data ?? [])
     } catch (error) {
       console.error('❌ Greška pri učitavanju korisnika:', error)
+      this.error = 'Greška pri učitavanju korisnika.'
+    } finally {
+      this.loading = false
     }
   },
   methods: {
@@ -80,37 +82,29 @@ export default {
       return new Date(dateStr).toLocaleString()
     },
     async changeRole(user) {
-      const token = localStorage.getItem('token')
       const novaUloga = user.role === 'user' ? 'admin' : 'user'
       if (!confirm(`Promeniti ulogu korisniku ${user.email} na "${novaUloga}"?`)) return
 
       try {
-        await axios.patch(`http://localhost:8080/api/users/${user.id}/role`, {
-          role: novaUloga
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
+        await api.patch(`/users/${user.id}/role`, { role: novaUloga }) // → /api/users/:id/role
         user.role = novaUloga
         alert('✅ Uloga uspešno promenjena.')
       } catch (error) {
         console.error('❌ Greška pri promeni uloge:', error)
+        alert('Greška pri promeni uloge.')
       }
     },
     async deleteUser(id) {
-      const token = localStorage.getItem('token')
       if (!confirm('Da li ste sigurni da želite da obrišete korisnika?')) return
-
       try {
-        await axios.delete(`http://localhost:8080/api/users/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        await api.delete(`/users/${id}`) // → /api/users/:id
         this.users = this.users.filter(u => u.id !== id)
         alert('🗑 Korisnik je obrisan.')
       } catch (error) {
         console.error('❌ Greška pri brisanju korisnika:', error)
+        alert('Greška pri brisanju korisnika.')
       }
-    }
-  }
+    },
+  },
 }
 </script>

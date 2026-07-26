@@ -146,7 +146,7 @@ Example:
 ```
 2.0.0
 
-2.1.0
+2.1.0 26. jula 2026. uspešno uveden Git-based deployment na Cloudways.
 
 2.1.4
 

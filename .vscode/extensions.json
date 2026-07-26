@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "Vue.volar",
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "mikestead.dotenv",
+        "GitHub.copilot"
+    ]
+}

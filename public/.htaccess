@@ -1,0 +1,43 @@
+<IfModule mod_rewrite.c>
+
+  RewriteEngine On
+
+
+  # 0) Propusti STVARNE FAJLOVE (css/js/png/svg…)
+
+  RewriteCond %{REQUEST_FILENAME} -f
+
+  RewriteRule ^ - [L]
+
+
+  # 1) Laravel backend: API, Sanctum i web-auth rute
+
+  #    (POST /login, /logout, /register, /password/*, /email/*)
+
+  RewriteCond %{REQUEST_URI} ^/(api|sanctum|login|logout|register|password|email) [NC]
+
+  RewriteRule ^ index.php [L]
+
+
+  # 2) SPA fallback za SVE OSTALO (uključuje i "/")
+
+  #    -> bitno: koristi ^ (ne .) i BEZ početnog /
+
+  RewriteRule ^ index.html [L]
+
+</IfModule>
+
+
+<IfModule mod_headers.c>
+
+  <FilesMatch "^index\.html$">
+
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0, private"
+
+    Header set Pragma "no-cache"
+
+    Header set Expires "0"
+
+  </FilesMatch>
+
+</IfModule>

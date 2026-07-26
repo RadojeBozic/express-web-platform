@@ -1,0 +1,119 @@
+# ============================================================
+# Express Web Platform
+# Laravel + Vue + Vite
+# ============================================================
+
+########################
+# Laravel
+########################
+
+/vendor/
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
+
+########################
+# Environment
+########################
+
+.env
+.env.*
+!.env.example
+
+########################
+# Node
+########################
+
+/node_modules/
+/frontend/node_modules/
+
+########################
+# Build
+########################
+
+/public/build/
+/frontend/dist/
+
+########################
+# IDE
+########################
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.idea/
+
+########################
+# OS
+########################
+
+.DS_Store
+Thumbs.db
+
+########################
+# Logs
+########################
+
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+########################
+# Testing
+########################
+
+.phpunit.result.cache
+
+########################
+# Local backups
+########################
+
+/backups/
+*.zip
+*.7z
+*.tar
+*.tgz
+*.gz
+
+########################
+# Database
+########################
+
+*.sql
+*.sqlite
+
+########################
+# Temporary files
+########################
+
+cookies*.txt
+headers.txt
+login.out
+.route_list.txt
+
+########################
+# Backup files
+########################
+
+*.bak
+*.bak.*
+*.old
+*.orig
+
+########################
+# Generated files
+########################
+
+public/storage
+
+########################
+# AI / temporary notes
+########################
+
+*.tmp
+*.temp

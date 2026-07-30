@@ -47,6 +47,7 @@
 | EW-008 | Proposed | P1 | SEO | SEO and Indexing Audit | — | Verify metadata, sitemap, robots, canonical and multilingual SEO |
 | EW-009 | Proposed | P1 | Performance | Performance Baseline | — | Establish measurable production baseline |
 | EW-010 | Proposed | P1 | Accessibility | Accessibility Baseline | — | Review critical pages and interaction patterns |
+| EW-011 | Ready | P1 | Engineering Standards | AI Collaboration Standard v0.1 | — | Initial standard based only on validated GBS Core and Express Web practices |
 
 ---
 

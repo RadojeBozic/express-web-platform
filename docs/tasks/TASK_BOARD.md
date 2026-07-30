@@ -38,8 +38,16 @@
 | ID | Status | Priority | Area | Title | Branch | Notes |
 |---|---|---:|---|---|---|---|
 | EW-001 | Review | P0 | Documentation | Documentation Foundation | `docs/EW-001-documentation-foundation` | Core documents and working directories added |
-| EW-002 | Planned | P0 | Architecture | Repository Architecture Audit | — | Read-only Codex audit; no source-code changes |
+| EW-002 | In Progress | P0 | Architecture | Repository Architecture Audit | — | Read-only Codex audit; no source-code changes |
 | EW-003 | Proposed | P0 | Newsletter | Newsletter Requirements and Architecture | — | Analyse existing implementation and production requirements |
+
+| EW-021 | Proposed | P0 | Frontend | Frontend Source of Truth Confirmation | — | Verify and confirm the single source of truth for frontend assets |
+| EW-022 | Proposed | P0 | DevOps | Deployment Process Verification | — | Validate the deployment process and identify potential improvements |
+
+| EW-023 | Proposed | P0 | Documentation | Documentation Consolidation Plan | — | Identify and consolidate documentation across the organisation |
+| EW-024 | Proposed | P0 | Assets | Compiled Asset Policy | — | Define and implement a policy for managing compiled assets |
+| EW-025 | Proposed | P0 | Repository | Legacy Repository Assessment | — | Evaluate and plan the migration or decommissioning of legacy repositories |
+
 | EW-004 | Proposed | P1 | Pricing | Pricing Structure Audit | — | Review offer clarity and current pricing page |
 | EW-005 | Proposed | P1 | Content | Blog CTA Standardisation | — | Review recent articles and CTA patterns |
 | EW-006 | Proposed | P1 | Analytics | Analytics Measurement Plan | — | Define events, conversions, and reporting |
@@ -48,6 +56,8 @@
 | EW-009 | Proposed | P1 | Performance | Performance Baseline | — | Establish measurable production baseline |
 | EW-010 | Proposed | P1 | Accessibility | Accessibility Baseline | — | Review critical pages and interaction patterns |
 | EW-011 | Ready | P1 | Engineering Standards | AI Collaboration Standard v0.1 | — | Initial standard based only on validated GBS Core and Express Web practices |
+
+
 
 ---
 
